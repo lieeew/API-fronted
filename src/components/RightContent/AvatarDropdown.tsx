@@ -8,6 +8,7 @@ import type { MenuInfo } from 'rc-menu/lib/interface';
 import React, { useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import HeaderDropdown from '../HeaderDropdown';
+import {userLogoutUsingPOST} from "@/services/yuapi-backend/userController";
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -64,7 +65,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
         flushSync(() => {
           setInitialState((s) => ({ ...s, currentUser: undefined }));
         });
-        loginOut();
+        // 注销登录
+        userLogoutUsingPOST();
         return;
       }
       history.push(`/account/${key}`);
