@@ -1,23 +1,14 @@
-import {addRule, removeRule, rule, updateRule} from '@/services/ant-design-pro/api';
+import {addRule, removeRule, updateRule} from '@/services/ant-design-pro/api';
 import {PlusOutlined} from '@ant-design/icons';
 import type {ActionType, ProColumns, ProDescriptionsItemProps} from '@ant-design/pro-components';
-import {
-  FooterToolbar,
-  ModalForm,
-  PageContainer,
-  ProDescriptions,
-  ProFormText,
-  ProFormTextArea,
-  ProTable,
-} from '@ant-design/pro-components';
+import {FooterToolbar, PageContainer, ProDescriptions, ProTable,} from '@ant-design/pro-components';
 import {FormattedMessage, useIntl} from '@umijs/max';
-import {Button, Drawer, Input, message} from 'antd';
+import {Button, Drawer, message} from 'antd';
 import React, {useRef, useState} from 'react';
 import type {FormValueType} from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
 import {listInterfaceInfoUsingGET} from "@/services/yuapi-backend/interfaceInfoController";
-import {SortOrder} from "antd/es/table/interface";
-import integer from "async-validator/dist-types/validator/integer";
+import CreateModal from "@/pages/InterfaceInfo/components/CreateModal";
 
 /**
  * @en-US Add node
@@ -168,6 +159,22 @@ const TableList: React.FC = () => {
       dataIndex: 'updateTime',
       valueType: 'dateTime',
     },
+    {
+      title: '操作',
+      dataIndex: 'option',
+      valueType: 'option',
+      render: (_, record) => [
+        <a
+          key="config"
+          onClick={() => {
+            handleUpdateModalVisible(true);
+            setCurrentRow(record);
+          }}
+        >
+          修改
+        </a>
+      ],
+    },
   ];
 
   return (
@@ -201,8 +208,6 @@ const TableList: React.FC = () => {
               pageSize: number;
               current: number;
             },
-            sort,
-            filter,
           ) => {
             // 这里需要返回一个 Promise,在返回之前你可以进行数据转化
             // 如果需要转化参数可以在这里进行修改
@@ -211,14 +216,26 @@ const TableList: React.FC = () => {
               page: params.current,
               pageSize: params.pageSize,
             });
-            return {
-              data: res?.data?.records,
-              // success 请返回 true，
-              // 不然 table 会停止解析数据，即使有数据
-              success: true,
-              // 不传会使用 data 的长度，如果是分页一定要传
-              total: res?.data?.total,
-            };
+            if (res.data) {
+
+              return {
+                data: res?.data?.records,
+                // success 请返回 true，
+                // 不然 table 会停止解析数据，即使有数据
+                success: true,
+                // 不传会使用 data 的长度，如果是分页一定要传
+                total: res?.data?.total,
+              };
+            } else {
+              return {
+                data: res.data,
+                // success 请返回 true，
+                // 不然 table 会停止解析数据，即使有数据
+                success: false,
+                // 不传会使用 data 的长度，如果是分页一定要传
+                total: 0,
+              }
+            }
           }
         }
         columns={columns}
@@ -267,41 +284,7 @@ const TableList: React.FC = () => {
           </Button>
         </FooterToolbar>
       )}
-      <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'New rule',
-        })}
-        width="400px"
-        open={createModalOpen}
-        onOpenChange={handleModalOpen}
-        onFinish={async (value) => {
-          const success = await handleAdd(value as API.RuleListItem);
-          if (success) {
-            handleModalOpen(false);
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-      >
-        <ProFormText
-          rules={[
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.searchTable.ruleName"
-                  defaultMessage="Rule name is required"
-                />
-              ),
-            },
-          ]}
-          width="md"
-          name="name"
-        />
-        <ProFormTextArea width="md" name="desc"/>
-      </ModalForm>
+
       <UpdateForm
         onSubmit={async (value) => {
           const success = await handleUpdate(value);
@@ -346,6 +329,16 @@ const TableList: React.FC = () => {
           />
         )}
       </Drawer>
+      <CreateModal
+        columns={columns}
+        onCancel={() => {
+          handleModalVisible(false);
+        }}
+        onSubmit={(values) => {
+          handleAdd(values);
+        }}
+        visible={createModalVisible}
+        />
     </PageContainer>
   );
 };
