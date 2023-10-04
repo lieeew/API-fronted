@@ -1,11 +1,11 @@
-import { PageContainer } from '@ant-design/pro-components';
-import React, { useEffect, useState } from 'react';
-import {Button, Card, Descriptions, Form, message, Input, Spin, Divider} from 'antd';
+import {PageContainer} from '@ant-design/pro-components';
+import React, {useEffect, useState} from 'react';
+import {Button, Card, Descriptions, Divider, Form, Input, message} from 'antd';
 import {
   getInterfaceInfoByIdUsingGET,
   invokeInterfaceInfoUsingPOST,
 } from '@/services/yuapi-backend/interfaceInfoController';
-import { useParams } from '@@/exports';
+import {useParams} from '@@/exports';
 
 /**
  * 主页
@@ -49,6 +49,7 @@ const Index: React.FC = () => {
     try {
       const res = await invokeInterfaceInfoUsingPOST({
         id: params.id,
+        methodName: data?.name,
         ...values,
       });
       setInvokeRes(res.data);
